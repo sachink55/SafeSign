@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.env
+
+# Data
+data/raw/*
+data/processed/*
+
+# Models
+models/trained/*
+models/checkpoints/*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
