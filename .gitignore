@@ -1,18 +1,63 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables (CRITICAL)
+.env
+.env.*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Python / ML
 __pycache__/
 *.pyc
-.env
+*.pyo
+*.pyd
+.Python
 
-# Data
-data/raw/*
-data/processed/*
+# Virtual environments
+myenv/
+venv/
+.venv/
+env/
 
-# Models
-models/trained/*
-models/checkpoints/*
+# =========================
+# 🚀 IMPORTANT (YOUR CASE)
+# =========================
 
-# Jupyter
+# Dataset (VERY LARGE)
+dataset/
+
+# ML models / weights
+*.h5
+*.keras
+*.pth
+*.pkl
+*.npy
+
+# Jupyter notebooks (optional but recommended)
+*.ipynb
 .ipynb_checkpoints/
 
-# OS
+# =========================
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
 .DS_Store
-node_modules
+Thumbs.db
+
+# Logs
+logs/
+*.log

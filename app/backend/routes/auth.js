@@ -164,4 +164,48 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// ─── UPDATE PROFILE (protected) ─────────────────────────────
+router.put('/profile', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Not authenticated.' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { name, email } = req.body;
+
+    // Check if email is already taken by another user
+    if (email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: decoded.id } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already in use.' });
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      decoded.id,
+      { $set: { name, email } },
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      message: 'Profile updated successfully.',
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        signature: updatedUser.signature,
+        role: updatedUser.role,
+        bankDetails: updatedUser.bankDetails,
+        verificationHistory: updatedUser.verificationHistory
+      }
+    });
+  } catch (err) {
+    console.error('Update profile error:', err);
+    res.status(500).json({ message: 'Failed to update profile.' });
+  }
+});
+
 export default router;

@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, ShieldCheck, Upload, AlertCircle, Eye, EyeOff, X, FileImage } from 'lucide-react';
+import { readFileAsPreview } from '../utils/imageUtils.js';
 
-const API_URL = 'http://localhost:5005/api';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' ? 'http://localhost:5005/api' : '/api');
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -33,16 +34,24 @@ export default function RegisterPage() {
     if (serverError) setServerError('');
   };
 
-  const handleFileSelect = (selectedFile) => {
+  const handleFileSelect = async (selectedFile) => {
     if (!selectedFile) return;
-    if (!selectedFile.type.startsWith('image/')) {
-      alert('Please upload an image file.');
+    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.bmp', '.tif', '.tiff', '.webp', '.gif'];
+    const ext = selectedFile.name.toLowerCase().slice(selectedFile.name.lastIndexOf('.'));
+    if (!selectedFile.type.startsWith('image/') && !allowedExtensions.includes(ext)) {
+      alert('Please upload an image file (PNG, JPG, BMP, TIF, etc.).');
       return;
     }
     setSignatureFile(selectedFile);
-    const reader = new FileReader();
-    reader.onload = (e) => setSignaturePreview(e.target.result);
-    reader.readAsDataURL(selectedFile);
+    try {
+      const dataUrl = await readFileAsPreview(selectedFile);
+      setSignaturePreview(dataUrl);
+    } catch (err) {
+      console.error('Error reading file:', err);
+      const reader = new FileReader();
+      reader.onload = (e) => setSignaturePreview(e.target.result);
+      reader.readAsDataURL(selectedFile);
+    }
     if (errors.signature) setErrors({ ...errors, signature: '' });
   };
 
@@ -163,7 +172,7 @@ export default function RegisterPage() {
             <div className="auth-header">
               <Link to="/" className="auth-logo">
                 <div className="auth-logo-icon">
-                  <ShieldCheck size={22} />
+                  <img src="/logo.png" alt="Logo" className="navbar-brand-logo" />
                 </div>
                 SafeSign
               </Link>
@@ -304,7 +313,7 @@ export default function RegisterPage() {
               {/* Signature Upload */}
               {form.role !== 'admin' && (
                 <div className="form-group">
-                  <label className="form-label">Signature Image (.jpg, .png)</label>
+                  <label className="form-label">Signature Image</label>
                   {!signaturePreview ? (
                     <div
                       className={`upload-zone ${dragOver ? 'drag-over' : ''}`}
@@ -320,10 +329,11 @@ export default function RegisterPage() {
                       <p className="upload-zone-text" style={{ fontSize: 'var(--font-size-sm)' }}>
                         <span className="upload-zone-highlight">Click to upload</span> or drag and drop
                       </p>
+                      <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>PNG, JPG, BMP, TIF, TIFF, WEBP</p>
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/jpeg, image/png, image/jpg"
+                        accept="image/*,.tif,.tiff,.bmp"
                         style={{ display: 'none' }}
                         onChange={(e) => handleFileSelect(e.target.files[0])}
                       />

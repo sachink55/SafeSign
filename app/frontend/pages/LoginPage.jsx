@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ShieldCheck, AlertCircle, Eye, EyeOff, LogIn } from 'lucide-react';
 
-const API_URL = 'http://localhost:5005/api';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' ? 'http://localhost:5005/api' : '/api');
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -78,7 +78,7 @@ export default function LoginPage() {
             <div className="auth-header">
               <Link to="/" className="auth-logo">
                 <div className="auth-logo-icon">
-                  <ShieldCheck size={22} />
+                  <img src="/logo.png" alt="Logo" className="navbar-brand-logo" />
                 </div>
                 SafeSign
               </Link>

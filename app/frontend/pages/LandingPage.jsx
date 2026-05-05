@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, ScanLine, FileCheck, Sparkles } from 'lucide-react';
 
 export default function LandingPage() {
@@ -13,7 +13,20 @@ export default function LandingPage() {
         <div className="bg-orb bg-orb-3" />
       </div>
 
-      <div className="content-wrapper" style={{ flexDirection: 'column', paddingTop: '120px' }}>
+      <nav className="navbar">
+        <Link to="/" className="navbar-brand">
+          <div className="navbar-brand-icon">
+            <img src="/logo.png" alt="SafeSign Logo" className="navbar-brand-logo" />
+          </div>
+          SafeSign
+        </Link>
+        <div className="navbar-actions">
+          <button className="btn btn-secondary" onClick={() => navigate('/login')}>Login</button>
+          <button className="btn btn-primary" onClick={() => navigate('/register')}>Register</button>
+        </div>
+      </nav>
+
+      <div className="content-wrapper" style={{ flexDirection: 'column', paddingTop: '160px' }}>
         <div className="landing-hero">
           {/* Badge */}
           <div className="landing-badge">

@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server/index.js"
+    "server": "node app/backend/index.js",
+    "start": "node app/backend/index.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -22,7 +23,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.1",
-    "react-signature-canvas": "^1.1.0-alpha.2"
+    "react-signature-canvas": "^1.1.0-alpha.2",
+    "utif2": "^4.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

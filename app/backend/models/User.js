@@ -36,6 +36,16 @@ const userSchema = new mongoose.Schema(
       balance: { type: Number, default: 0 },
       accountType: { type: String, default: 'Savings' },
     },
+    verificationHistory: [
+      {
+        verifiedEmail: String,
+        verifiedName: String,
+        prediction: String,
+        distance: Number,
+        threshold: Number,
+        timestamp: { type: Date, default: Date.now },
+      }
+    ],
   },
   { timestamps: true }
 );
