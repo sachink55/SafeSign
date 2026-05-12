@@ -36,7 +36,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(distPath));
   
   // Handle SPA routing: serve index.html for all non-api routes
-  app.get('*', (req, res, next) => {
+  app.get(/.*/, (req, res, next) => {
     if (req.path.startsWith('/api')) {
       return next(); // Fall through to 404 if it's a missing API route
     }
