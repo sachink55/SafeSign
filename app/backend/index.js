@@ -30,14 +30,17 @@ app.get('/api/health', (req, res) => {
 
 // ─── Production: Serve Frontend ──────────────────────────────
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../../dist');
+  const distPath = path.resolve(__dirname, '../../dist');
+  console.log(`📦 Production mode: Serving static files from ${distPath}`);
+  
   app.use(express.static(distPath));
   
   // Handle SPA routing: serve index.html for all non-api routes
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(distPath, 'index.html'));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next(); // Fall through to 404 if it's a missing API route
     }
+    res.sendFile(path.join(distPath, 'index.html'));
   });
 }
 
@@ -51,6 +54,7 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ Server startup failed:');
+    console.error(err);
     process.exit(1);
   });
