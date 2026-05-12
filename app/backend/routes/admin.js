@@ -4,7 +4,7 @@ import User from '../models/User.js';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { execFile } from 'child_process';
+import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -101,9 +101,39 @@ router.post('/verify-cheque', requireAdmin, async (req, res) => {
     // 4. Run the python script
     const scriptPath = path.join(__dirname, '..', 'predict.py');
     const modelPath = path.join(__dirname, '..', '..', '..', 'model', 'signature_triplet_model.h5');
-    const pythonExe = path.join(__dirname, '..', '..', '..', 'myenv', 'Scripts', 'python.exe');
+    
+    // Cross-platform python command
+    const pythonExe = process.platform === 'win32' 
+      ? path.join(__dirname, '..', '..', '..', 'myenv', 'Scripts', 'python.exe')
+      : 'python3'; 
 
-    execFile(pythonExe, [scriptPath, modelPath, registeredImagePath, uploadedImagePath], async (error, stdout, stderr) => {
+    console.log(`🚀 Running verification:`);
+    console.log(`   Python: ${pythonExe}`);
+    console.log(`   Script: ${scriptPath}`);
+    console.log(`   Model: ${modelPath}`);
+
+    // Check if model file exists and is not a Git LFS pointer
+    try {
+      const modelStat = await fs.stat(modelPath);
+      console.log(`   Model size: ${(modelStat.size / 1024 / 1024).toFixed(1)} MB`);
+      if (modelStat.size < 1000) {
+        // LFS pointer files are tiny (~130 bytes)
+        const content = await fs.readFile(modelPath, 'utf-8');
+        if (content.includes('git-lfs')) {
+          console.error('❌ Model file is a Git LFS pointer, not the actual model!');
+          return res.status(500).json({ 
+            message: 'Model file not downloaded. Git LFS pull required during build.' 
+          });
+        }
+      }
+    } catch (statErr) {
+      console.error('❌ Model file not found:', statErr.message);
+      return res.status(500).json({ message: 'Model file not found on server.' });
+    }
+
+    const cmd = `"${pythonExe}" "${scriptPath}" "${modelPath}" "${registeredImagePath}" "${uploadedImagePath}"`;
+    console.log(`   Command: ${cmd}`);
+    exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, async (error, stdout, stderr) => {
       // Clean up files first
       try {
         await fs.rm(tempDir, { recursive: true, force: true });
@@ -112,8 +142,10 @@ router.post('/verify-cheque', requireAdmin, async (req, res) => {
       }
 
       if (error) {
-        console.error('Python script error:', error, stderr);
-        return res.status(500).json({ message: 'Error running signature verification model.' });
+        console.error('Python script error:', error);
+        console.error('Python stderr:', stderr);
+        console.error('Python stdout:', stdout);
+        return res.status(500).json({ message: 'Error running signature verification model.', details: stderr || error.message });
       }
 
       try {
